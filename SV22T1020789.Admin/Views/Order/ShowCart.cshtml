@@ -1,0 +1,73 @@
+﻿@model IEnumerable<OrderDetailViewInfo>
+@{
+    Layout = null;
+    int stt = 0;
+    decimal sumPrice = 0;
+}
+<div class="card card-outline card-success">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="bi bi-cart"></i>
+            Danh sách mặt hàng đã chọn
+        </h5>
+    </div>
+
+    <div class="card-body">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th class="text-center">#</th>
+                    <th style="width:auto">Tên hàng</th>
+                    <th class="text-center" style="width:100px">ĐVT</th>
+                    <th class="text-center" style="width:100px">SL</th>
+                    <th class="text-end" style="width:150px">Giá</th>
+                    <th class="text-end" style="width:150px">Thành tiền</th>
+                    <th style="width:80px"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model) 
+                {
+                    stt += 1;
+                    sumPrice += item.TotalPrice;
+                    <tr>
+                        <td class="text-center">@stt</td>
+                        <td>@item.ProductName</td>
+                        <td class="text-center">@item.Unit</td>
+                        <td class="text-center">@item.Quantity</td>
+                        <td class="text-end">@item.SalePrice</td>
+                        <td class="text-end">@item.TotalPrice</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-primary open-modal" 
+                                href="~/Order/EditCartItem?productId=@item.ProductID"
+                                onclick="openModal(event,this)">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a class="btn btn-sm btn-danger open-modal" href="~/Order/DeleteCartItem?productId=@item.ProductID"
+                               onclick="openModal(event,this)">
+                                
+                                <i class="bi bi-dash"></i>
+
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="5" class="text-end">Tổng cộng:</th>
+                    <th class="text-end">@sumPrice</th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="text-end">
+            <a class="btn btn-sm btn-danger mt-2 open-modal"
+               href="~/Order/ClearCart" onclick="openModal(event,this)">
+                <i class="bi bi-trash"></i>
+                Xóa giỏ hàng
+            </a>
+        </div>
+    </div>
+</div>

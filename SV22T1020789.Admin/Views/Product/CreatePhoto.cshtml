@@ -1,0 +1,47 @@
+﻿@{
+    ViewBag.Title = "Bổ sung ảnh";
+    var productId = ViewBag.ProductID;
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-plus me-2"></i> Bổ sung ảnh</h5>
+                </div>
+                <div class="card-body p-4">
+
+                    <form action="/Product/CreatePhoto/@productId" method="post" enctype="multipart/form-data">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Chọn file ảnh:</label>
+                            <input type="file" name="fileUpload" class="form-control" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Mô tả:</label>
+                            <input type="text" name="Description" class="form-control" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Thứ tự:</label>
+                            <input type="number" name="DisplayOrder" class="form-control w-25" value="1" />
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" name="IsHidden" class="form-check-input" value="true" id="isHidden">
+                            <label class="form-check-label" for="isHidden">Ẩn ảnh này</label>
+                        </div>
+
+                        <div class="text-end">
+                            <a href="/Product/Edit/@productId" class="btn btn-secondary me-2">Quay lại</a>
+                            <button type="submit" class="btn btn-primary">Lưu dữ liệu</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

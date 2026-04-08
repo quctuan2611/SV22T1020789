@@ -1,0 +1,45 @@
+﻿@model PaginationSearchInput
+@{
+    ViewBag.Title = "Quản lý Khách hàng";
+}
+@section PageToolBar {
+    <a href="~/Customer/Create" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>
+        Bổ sung
+    </a>
+}
+<div class="card mb-3">
+    <div class="card-body">
+
+        <form id="formSearch"
+              method="get"
+              action="~/Customer/Search"
+              data-target="searchResult"
+              onsubmit="paginationSearch(event, this, 1)">
+
+            <div class="input-group">
+                <input type="hidden" asp-for="PageSize" />
+                <input type="text"
+                       class="form-control"
+                       asp-for="SearchValue"
+                       placeholder="Tên khách hàng..." autofocus />
+
+                <button class="btn btn-info d-flex align-items-center">
+                    <i class="bi bi-search me-1"></i>
+
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="searchResult" ></div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            paginationSearch(null, document.getElementById("formSearch"),@Model.Page);
+        });
+    </script>
+}
+

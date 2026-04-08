@@ -1,0 +1,33 @@
+﻿@model int
+@{
+    Layout = null;
+}
+
+<form action="~/Order/Cancel/@Model" method="post">
+    <div class="modal-header text-bg-warning">
+        <strong class="modal-title">
+            Xác nhận hủy đơn hàng
+        </strong>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+
+    <div class="modal-body">
+        <div class="alert alert-warning d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Bạn có thực sự muốn hủy đơn hàng <strong>#@Model</strong> này hay không?
+        </div>
+
+        
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check"></i> Đồng ý hủy
+        </button>
+        <button type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal">
+            Đóng
+        </button>
+    </div>
+</form>

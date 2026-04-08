@@ -1,0 +1,40 @@
+﻿@model SV22T1020789.Models.Sales.OrderDetailViewInfo
+
+<form action="~/Order/UpdateDetail" method="post">
+    <div class="modal-header bg-primary">
+        <h5 class="modal-title text-white">Sửa chi tiết đơn hàng</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <div class="modal-body">
+        <input type="hidden" name="orderID" value="@Model.OrderID" />
+        <input type="hidden" name="productID" value="@Model.ProductID" />
+
+        <div class="mb-3">
+            <label class="form-label text-muted">Tên mặt hàng</label>
+            <div class="form-control bg-light">@Model.ProductName</div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-4 mb-3">
+                <label class="form-label text-muted">Đơn vị tính</label>
+                <div class="form-control bg-light">@Model.Unit</div>
+            </div>
+            <div class="col-sm-4 mb-3">
+                <label class="form-label fw-bold">Số lượng</label>
+                <input type="number" class="form-control" name="quantity" value="@Model.Quantity" min="1" required />
+            </div>
+            <div class="col-sm-4 mb-3">
+                <label class="form-label fw-bold">Giá bán</label>
+                <input type="number" class="form-control" name="salePrice" value="@Model.SalePrice.ToString("0")" min="0" required />
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">
+            <i class="fa fa-floppy-o"></i> Cập nhật
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+    </div>
+</form>

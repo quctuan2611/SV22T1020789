@@ -1,0 +1,165 @@
+﻿@model SV22T1020789.Models.Catalog.Product
+@{
+}
+
+@section PageToolBar {
+    <button type="submit" form="formEdit" class="btn btn-primary">
+        <i class="bi bi-save"></i>
+        Lưu dữ liệu
+    </button>
+
+    <a href="~/Product" class="btn btn-secondary ms-1">
+        <i class="bi bi-arrow-left"></i>
+        Quay lại
+    </a>
+}
+
+<div class="row justify-content-center">
+    <div class="col-12">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-box-seam me-2"></i>
+                    Thông tin mặt hàng
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <form id="formEdit" action="~/Product/Save" method="post" enctype="multipart/form-data">
+
+                    <input type="hidden" asp-for="ProductID" />
+
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label">Tên mặt hàng</label>
+                        <div class="col-sm-9">
+                            <input type="text"
+                                   class="form-control"
+                                   asp-for="ProductName"
+                                   placeholder="Nhập tên mặt hàng" autofocus />
+                            @Html.ValidationMessage("ProductName", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label">Loại hàng</label>
+                        <div class="col-sm-3">
+                            <select class="form-select" asp-for="CategoryID">
+                                <option value="0">-- Chọn loại hàng --</option>
+                                @foreach (var item in ViewBag.Categories)
+                                {
+                                    <option value="@item.CategoryID">@item.CategoryName</option>
+                                }
+                            </select>
+                            @Html.ValidationMessage("CategoryID", new { @class = "text-danger" })
+                        </div>
+
+                        <label class="col-sm-2 col-form-label text-end">Nhà cung cấp</label>
+                        <div class="col-sm-4">
+                            <select class="form-select" asp-for="SupplierID">
+                                <option value="0">-- Chọn nhà cung cấp --</option>
+                                @foreach (var item in ViewBag.Suppliers)
+                                {
+                                    <option value="@item.SupplierID">@item.SupplierName</option>
+                                }
+                            </select>
+                            @Html.ValidationMessage("SupplierID", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label">Đơn vị tính</label>
+                        <div class="col-sm-3">
+                            <input type="text"
+                                   class="form-control"
+                                   asp-for="Unit"
+                                   placeholder="cái, hộp, kg..." />
+                            @Html.ValidationMessage("Unit", new { @class = "text-danger" })
+                        </div>
+
+                        <label class="col-sm-2 col-form-label text-end">Giá</label>
+                        <div class="col-sm-4">
+                            <input type="number"
+                                   class="form-control money-input"
+                                   asp-for="Price"
+                                   placeholder="Giá bán"
+                                   min="0" />
+                            @Html.ValidationMessage("Price", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label">Trạng thái</label>
+                        <div class="col-sm-9">
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" asp-for="IsSelling" />
+                                <label class="form-check-label" for="IsSelling">
+                                    Đang bán
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label">Ảnh</label>
+                        <div class="col-sm-9">
+                            <input type="hidden" asp-for="Photo" />
+                            <input type="file"
+                                   class="form-control"
+                                   name="uploadPhoto"
+                                   accept="image/*"
+                                   data-img-preview="imgPreview"
+                                   onchange="document.getElementById('imgPreview').src = window.URL.createObjectURL(this.files[0])" />
+                            <div class="mt-2">
+                                <img id="imgPreview"
+                                     src="~/images/products/@(string.IsNullOrEmpty(Model.Photo) ? "nophoto.png" : Model.Photo)"
+                                     class="img-thumbnail"
+                                     style="max-height: 160px;" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label">Mô tả</label>
+                        <div class="col-sm-9">
+                            <textarea class="form-control"
+                                      rows="3"
+                                      asp-for="ProductDescription"
+                                      placeholder="Nhập mô tả mặt hàng"></textarea>
+                        </div>
+                    </div>
+
+                    @Html.ValidationMessage("Error", new { @class = "text-danger" })
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.ProductID > 0)
+{
+    <div id="listAttributes"></div>
+    <div id="listPhotos"></div>
+
+    <script>
+        // Đảm bảo toàn bộ trang web load xong mới bắt đầu đi lấy dữ liệu bảng
+        window.addEventListener('DOMContentLoaded', function () {
+
+            // 1. Lấy dữ liệu bảng Thuộc tính
+            fetch('/Product/ListAttributes/@Model.ProductID')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('listAttributes').innerHTML = html;
+                })
+                .catch(error => console.log('Lỗi tải thuộc tính:', error));
+
+            // 2. Lấy dữ liệu bảng Ảnh
+            fetch('/Product/ListPhotos/@Model.ProductID')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('listPhotos').innerHTML = html;
+                })
+                .catch(error => console.log('Lỗi tải ảnh:', error));
+
+        });
+    </script>
+}

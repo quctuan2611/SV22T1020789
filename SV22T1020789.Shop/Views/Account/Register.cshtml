@@ -1,0 +1,372 @@
+﻿@using SV22T1020789.Models.DataDictionary
+@{
+    Layout = null;
+    ViewBag.Title = "Đăng ký thành viên QTuan-Shop";
+    var provinces = ViewBag.Provinces as List<Province>;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary-color: #64748b;
+            --bg-color: #f1f5f9;
+            --input-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+        }
+
+        .login-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            min-height: 600px;
+        }
+
+        .login-sidebar {
+            flex: 1;
+            background-image: linear-gradient(135deg, rgba(79, 70, 229, 0.85) 0%, rgba(67, 56, 202, 0.95) 100%), url('https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070&auto=format&fit=crop');
+            background-position: center;
+            background-size: cover;
+            color: #ffffff;
+            padding: 50px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .back-home-link {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+            .back-home-link:hover {
+                color: #ffffff;
+                transform: translateX(-4px);
+            }
+
+        .login-sidebar i.logo-icon {
+            font-size: 4.5rem;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+        }
+
+        .login-sidebar h2 {
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .login-sidebar p {
+            font-size: 1.05rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .login-form-section {
+            flex: 1;
+            padding: 50px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+            .login-form-section h3 {
+                font-weight: 700;
+                color: #1e293b;
+                margin-bottom: 8px;
+            }
+
+        .form-floating > .form-control, .form-floating > .form-select {
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+            .form-floating > .form-control:focus, .form-floating > .form-select:focus {
+                background-color: #ffffff;
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+            }
+
+        .form-floating > label {
+            color: var(--secondary-color);
+            font-weight: 400;
+        }
+
+        .btn-login {
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+            .btn-login:hover {
+                background-color: var(--primary-hover);
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+            }
+
+        .register-link {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.95rem;
+            color: var(--secondary-color);
+        }
+
+            .register-link a {
+                color: var(--primary-color);
+                text-decoration: none;
+                font-weight: 600;
+                transition: color 0.2s;
+            }
+
+                .register-link a:hover {
+                    color: var(--primary-hover);
+                    text-decoration: underline;
+                }
+
+        @@media (max-width: 992px) {
+            .login-container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .login-sidebar {
+                padding: 50px 20px;
+            }
+
+            .login-form-section {
+                padding: 40px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-wrapper">
+        <div class="login-container">
+
+            <div class="login-sidebar">
+                <a href="~/" class="back-home-link">
+                    <i class="bi bi-arrow-left"></i> Trang chủ
+                </a>
+                <i class="bi bi-person-plus-fill text-warning logo-icon"></i>
+                <h2>Gia nhập QTuan-Shop</h2>
+                <p>Đăng ký tài khoản để nhận ngay hàng ngàn ưu đãi dành riêng cho bạn!</p>
+            </div>
+
+            <div class="login-form-section">
+                <h3 class="mb-4">Đăng ký tài khoản</h3>
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show rounded-3 border-0 shadow-sm mb-4" role="alert">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-exclamation-triangle-fill fs-5 me-2 text-danger"></i>
+                            <strong class="text-danger">Kiểm tra lại thông tin!</strong>
+                        </div>
+                        <div class="small text-danger">
+                            @Html.ValidationSummary(true, "", new { @class = "list-unstyled m-0 p-0" })
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                <form action="~/Account/Register" method="post" onsubmit="return validateForm(event)">
+
+                    <div class="form-floating mb-3">
+                        <input type="text" name="customerName" class="form-control" id="floatingCustomerName"
+                               value="@ViewBag.CustomerName" required placeholder="Họ và tên" />
+                        <label for="floatingCustomerName"><i class="bi bi-person me-2"></i>Họ và tên</label>
+                        @Html.ValidationMessage("customerName", "", new { @class = "text-danger small mt-1 d-block" })
+                    </div>
+
+                    <div class="form-floating mb-1">
+                        <input type="email" name="email" class="form-control" id="floatingEmail"
+                               value="@ViewBag.Email" required placeholder="Địa chỉ Email" oninput="hideEmailError()" />
+                        <label for="floatingEmail"><i class="bi bi-envelope me-2"></i>Địa chỉ Email</label>
+                    </div>
+
+                    <div id="emailError" class="text-danger small ms-2 mb-3 d-none" style="font-size: 0.85rem;">
+                        <i class="bi bi-exclamation-circle-fill me-1"></i>Email không đúng định dạng (Ví dụ: abc@gmail.com)!
+                    </div>
+                    @Html.ValidationMessage("email", "", new { @class = "text-danger small mt-1 d-block mb-3" })
+
+                    <div class="form-floating mb-3">
+                        <select name="province" class="form-select" id="floatingProvince" required>
+                            @if (string.IsNullOrEmpty((string)ViewBag.Province))
+                            {
+                                <option value="" disabled selected>-- Chọn Tỉnh/Thành phố --</option>
+                            }
+                            else
+                            {
+                                <option value="" disabled>-- Chọn Tỉnh/Thành phố --</option>
+                            }
+
+                            @if (provinces != null)
+                            {
+                                foreach (var item in provinces)
+                                {
+                                    if (item.ProvinceName == (string)ViewBag.Province)
+                                    {
+                                        <option value="@item.ProvinceName" selected>@item.ProvinceName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@item.ProvinceName">@item.ProvinceName</option>
+                                    }
+                                }
+                            }
+                        </select>
+                        <label for="floatingProvince"><i class="bi bi-geo-alt me-2"></i>Tỉnh/Thành phố</label>
+                        @Html.ValidationMessage("province", "", new { @class = "text-danger small mt-1 d-block" })
+                    </div>
+
+                    <div class="form-floating mb-1">
+                        <input type="password" name="password" class="form-control" id="floatingPassword"
+                               required placeholder="Mật khẩu" oninput="hideError()" />
+                        <label for="floatingPassword"><i class="bi bi-lock me-2"></i>Mật khẩu</label>
+                    </div>
+
+                    <div id="passwordError" class="text-danger small ms-2 mb-3 d-none" style="font-size: 0.85rem;">
+                        <i class="bi bi-exclamation-circle-fill me-1"></i>Mật khẩu phải có ít nhất 6 ký tự!
+                    </div>
+                    @Html.ValidationMessage("password", "", new { @class = "text-danger small mt-1 d-block mb-3" })
+
+                    <div class="form-floating mb-1">
+                        <input type="password" name="confirmPassword" class="form-control" id="floatingConfirmPassword"
+                               required placeholder="Xác nhận mật khẩu" oninput="hideConfirmError()" />
+                        <label for="floatingConfirmPassword"><i class="bi bi-shield-check me-2"></i>Xác nhận mật khẩu</label>
+                    </div>
+
+                    <div id="confirmPasswordError" class="text-danger small ms-2 mb-3 d-none" style="font-size: 0.85rem;">
+                        <i class="bi bi-exclamation-circle-fill me-1"></i>Mật khẩu xác nhận không khớp!
+                    </div>
+                    @Html.ValidationMessage("confirmPassword", "", new { @class = "text-danger small mt-1 d-block mb-3" })
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-login text-white">
+                            Hoàn tất đăng ký <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="register-link">
+                    Đã có tài khoản? <a href="~/Account/Login">Đăng nhập tại đây</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Hàm ẩn chữ đỏ cho mật khẩu
+        function hideError() {
+            document.getElementById('passwordError').classList.add('d-none');
+        }
+
+        // Hàm ẩn chữ đỏ cho email
+        function hideEmailError() {
+            document.getElementById('emailError').classList.add('d-none');
+        }
+
+        // BỔ SUNG: Hàm ẩn chữ đỏ cho xác nhận mật khẩu
+        function hideConfirmError() {
+            document.getElementById('confirmPasswordError').classList.add('d-none');
+        }
+
+        // Kiểm tra toàn bộ lúc submit
+        function validateForm(event) {
+            var emailInput = document.getElementById('floatingEmail');
+            var emailErrorText = document.getElementById('emailError');
+
+            var passInput = document.getElementById('floatingPassword');
+            var passErrorText = document.getElementById('passwordError');
+
+            var confirmPassInput = document.getElementById('floatingConfirmPassword');
+            var confirmPassErrorText = document.getElementById('confirmPasswordError');
+
+            var isValid = true;
+
+            // 1. Kiểm tra định dạng Email bằng Regex
+            var emailPattern = /^[^\s\x40]+\x40[^\s\x40]+\.[^\s\x40]+$/;
+            if (!emailPattern.test(emailInput.value)) {
+                emailErrorText.classList.remove('d-none');
+                emailInput.focus();
+                isValid = false;
+            }
+
+            // 2. Kiểm tra độ dài mật khẩu
+            if (passInput.value.length > 0 && passInput.value.length < 6) {
+                passErrorText.classList.remove('d-none');
+                if(isValid) passInput.focus();
+                isValid = false;
+            }
+
+            // 3. BỔ SUNG: Kiểm tra mật khẩu xác nhận có khớp không
+            if (passInput.value !== confirmPassInput.value) {
+                confirmPassErrorText.classList.remove('d-none');
+                if(isValid) confirmPassInput.focus(); // Nếu email và pass ok mà lỗi ở xác nhận thì nhảy thẳng tới ô xác nhận
+                isValid = false;
+            }
+
+            // Chặn không cho gửi form nếu có lỗi
+            if (!isValid) {
+                event.preventDefault();
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+﻿/* Đổi font chữ sang Nunito cho mềm mại và hiện đại */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background-color: #f4f7f6; /* Màu nền xám xanh nhẹ cho mắt dễ chịu */
+}
+
+/* --- Tùy chỉnh Header --- */
+.navbar {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px);
+}
+
+/* --- Tùy chỉnh Thẻ Sản phẩm (Product Card) --- */
+.product-card {
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid #f0f0f0 !important;
+    background: #fff;
+}
+
+    .product-card:hover {
+        transform: translateY(-8px); /* Nổi thẻ lên */
+        box-shadow: 0 15px 30px rgba(0,0,0,0.08) !important; /* Đổ bóng sâu hơn */
+        border-color: #e0e0e0 !important;
+    }
+
+    /* Ảnh sản phẩm zoom nhẹ khi hover */
+    .product-card img {
+        transition: transform 0.5s ease;
+    }
+
+    .product-card:hover img {
+        transform: scale(1.05);
+    }
+
+/* --- Tùy chỉnh Nút bấm --- */
+.btn-custom-cart {
+    background: linear-gradient(135deg, #ff416c, #ff4b2b); /* Nút gradient cực cháy */
+    border: none;
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+    .btn-custom-cart:hover {
+        background: linear-gradient(135deg, #ff4b2b, #ff416c);
+        transform: scale(1.03);
+        color: white;
+        box-shadow: 0 5px 15px rgba(255, 75, 43, 0.4);
+    }
+
+/* --- Tùy chỉnh Thanh cuộn (Scrollbar) --- */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }

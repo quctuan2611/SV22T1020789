@@ -1,0 +1,38 @@
+﻿@model int
+@{
+    Layout = null;
+}
+
+<form action="~/Order/Delete/@Model" method="post">
+    <div class="modal-header text-bg-danger">
+        <strong class="modal-title">
+            <i class="bi bi-trash"></i> Xóa đơn hàng
+        </strong>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+
+    <div class="modal-body">
+        <div class="alert alert-danger mb-0">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-octagon-fill fs-4 me-2"></i>
+                <div>
+                    <strong>Cảnh báo!</strong> Bạn có chắc chắn muốn xóa vĩnh viễn đơn hàng <strong>#@Model</strong> này không?
+                </div>
+            </div>
+            <p class="mt-2 mb-0 small text-secondary">
+                * Hành động này không thể hoàn tác. Dữ liệu liên quan đến đơn hàng sẽ bị gỡ bỏ khỏi hệ thống.
+            </p>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash"></i> Xác nhận xóa
+        </button>
+        <button type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal">
+            Đóng
+        </button>
+    </div>
+</form>

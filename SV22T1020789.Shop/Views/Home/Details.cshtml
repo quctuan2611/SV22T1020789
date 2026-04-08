@@ -1,0 +1,245 @@
+﻿@model Product
+@{
+    ViewBag.Title = Model.ProductName;
+
+    string adminImageBaseUrl = "http://localhost:5069/images/products/";
+}
+
+<style>
+    /* CSS để ẩn 2 cái mũi tên tăng giảm mặc định của trình duyệt */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
+
+    .quantity-input {
+        border-left: none;
+        border-right: none;
+        background-color: #fff !important;
+    }
+
+    
+    .thumbnail-gallery::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .thumbnail-gallery::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+
+    .thumbnail-item {
+        width: 80px;
+        min-width: 80px;
+        height: 80px;
+        cursor: pointer;
+        border: 2px solid transparent;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .thumbnail-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumbnail-item:hover {
+            border-color: #adb5bd;
+        }
+
+        .thumbnail-item.active {
+            border-color: #0d6efd;
+            box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+        }
+</style>
+
+<div class="container mt-4 mb-5">
+    <a href="javascript:history.back()" class="text-decoration-none text-muted mb-4 d-inline-block">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại
+    </a>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="row g-0">
+            @* PHẦN ẢNH *@
+            <div class="col-md-5 p-4 bg-light d-flex flex-column align-items-center justify-content-start">
+
+                <div class="main-image-container w-100 d-flex justify-content-center mb-4" style="height: 400px;">
+                    <img id="mainProductImage"
+                         src="@adminImageBaseUrl@(string.IsNullOrEmpty(Model.Photo) ? "no-image.png" : Model.Photo)"
+                         class="img-fluid rounded-3" alt="@Model.ProductName"
+                         onerror="this.src='https://placehold.co/600x600?text=No+Image'"
+                         style="max-height: 100%; object-fit: contain;">
+                </div>
+
+                <div class="thumbnail-gallery d-flex gap-2 overflow-auto w-100 pb-2">
+
+                    <div class="thumbnail-item active"
+                         onclick="changeMainImage(this, '@adminImageBaseUrl@(string.IsNullOrEmpty(Model.Photo) ? "no-image.png" : Model.Photo)')">
+                        <img src="@adminImageBaseUrl@(string.IsNullOrEmpty(Model.Photo) ? "no-image.png" : Model.Photo)"
+                             onerror="this.src='https://placehold.co/100x100?text=No+Image'" alt="Ảnh gốc">
+                    </div>
+
+                    @if (ViewBag.Photos != null)
+                    {
+                        var photos = ViewBag.Photos as IEnumerable<SV22T1020789.Models.Catalog.ProductPhoto>;
+                        if (photos != null)
+                        {
+                            foreach (var photo in photos)
+                            {
+                                if (!photo.IsHidden)
+                                {
+                                    <div class="thumbnail-item"
+                                         onclick="changeMainImage(this, '@adminImageBaseUrl@photo.Photo')">
+                                        <img src="@adminImageBaseUrl@photo.Photo"
+                                             onerror="this.src='https://placehold.co/100x100?text=No+Image'"
+                                             alt="@photo.Description">
+                                    </div>
+                                }
+                            }
+                        }
+                    }
+                </div>
+            </div>
+
+            @* PHẦN THÔNG TIN SẢN PHẨM *@
+            <div class="col-md-7 p-4 p-md-5">
+                <div class="badge bg-danger mb-3 px-3 py-2 rounded-pill shadow-sm">Hot Trend</div>
+
+                <h2 class="fw-bold text-dark mb-3">@Model.ProductName</h2>
+
+                <div class="mb-4">
+                    <h3 class="fw-bold text-danger m-0">@Model.Price.ToString("N0") đ</h3>
+                </div>
+
+                <div class="mb-4">
+
+                    <p class="mb-2"><i class="bi bi-tags text-warning me-2"></i><strong>Loại hàng:</strong> @ViewBag.CategoryName</p>
+
+                    <p class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i><strong>Đơn vị tính:</strong> @Model.Unit</p>
+                    <p class="mb-2"><i class="bi bi-shield-check text-primary me-2"></i><strong>Bảo hành:</strong> 12 tháng chính hãng</p>
+                    <p class="mb-2">
+                        <i class="bi bi-box-seam text-info me-2"></i><strong>Tình trạng:</strong>
+                        @if (Model.IsSelling)
+                        {
+                            <span class="text-success fw-bold">Đang kinh doanh</span>
+                        }
+                        else
+                        {
+                            <span class="text-danger fw-bold">Ngừng kinh doanh</span>
+                        }
+                    </p>
+                </div>
+
+                <hr class="text-muted opacity-25 mb-4">
+
+                <p class="text-muted lh-lg mb-4">
+                    Sản phẩm <strong>@Model.ProductName</strong> mang đến trải nghiệm tuyệt vời với thiết kế hiện đại, độ bền cao và hiệu năng vượt trội. Đặt mua ngay hôm nay để nhận ưu đãi từ <strong>QTuan-Shop</strong>!
+                </p>
+
+                @if (Model.IsSelling)
+                {
+                    <form id="addToCartForm" action="/Cart/Add" method="post" class="d-flex align-items-center gap-3 mt-4">
+                        <input type="hidden" name="id" value="@Model.ProductID" />
+
+                        <div class="input-group shadow-sm" style="width: 140px;">
+                            <button class="btn btn-light border" type="button"
+                                    onclick="var qty=document.getElementById('quantity'); if(qty.value > 1) qty.value--;">
+                                <i class="bi bi-dash-lg"></i>
+                            </button>
+
+                            <input type="number" id="quantity" name="quantity"
+                                   class="form-control text-center fw-bold quantity-input"
+                                   value="1" min="1" max="99" readonly>
+
+                            <button class="btn btn-light border" type="button"
+                                    onclick="var qty=document.getElementById('quantity'); if(qty.value < 99) qty.value++;">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow flex-grow-1 fw-bold">
+                            <i class="bi bi-cart-plus me-2"></i> Thêm vào giỏ
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-danger mt-4 text-center fw-bold rounded-pill shadow-sm py-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                        <span>Sản phẩm hiện đã ngừng kinh doanh!</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="successCartModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content text-center rounded-4 shadow border-0">
+            <div class="modal-body p-4">
+                <i class="bi bi-check-circle-fill text-success mb-3" style="font-size: 3.5rem;"></i>
+                <h5 class="fw-bold text-dark mb-4">Thêm hàng thành công!</h5>
+                <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" data-bs-dismiss="modal">
+                    Tiếp tục
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Script đổi ảnh khi click vào thumbnail
+    function changeMainImage(element, newSrc) {
+        document.getElementById('mainProductImage').src = newSrc;
+        let thumbnails = document.querySelectorAll('.thumbnail-item');
+        thumbnails.forEach(function(thumb) {
+            thumb.classList.remove('active');
+        });
+        element.classList.add('active');
+    }
+
+    // 2. Script thêm vào giỏ hàng chạy ngầm (AJAX)
+    const cartForm = document.getElementById('addToCartForm');
+    if (cartForm) {
+        cartForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            var form = this;
+            var formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mở bảng thông báo thành công
+                    var successModal = new bootstrap.Modal(document.getElementById('successCartModal'));
+                    successModal.show();
+
+
+                    let cartBadge = document.getElementById('cart-count');
+                    if (cartBadge) {
+                        cartBadge.innerText = data.totalCount;
+                    }
+
+                } else {
+                    alert('Có lỗi xảy ra, không thể thêm vào giỏ hàng!');
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi:', error);
+                alert('Lỗi kết nối tới máy chủ!');
+            });
+        });
+    }
+</script>

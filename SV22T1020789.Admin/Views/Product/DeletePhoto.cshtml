@@ -1,0 +1,38 @@
+﻿@model SV22T1020789.Models.Catalog.ProductPhoto
+@{
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-12">
+        <div class="card card-danger card-outline mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Xác nhận xóa hình ảnh mặt hàng</h5>
+            </div>
+
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <h5><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i> Cảnh báo!</h5>
+                    <p class="mb-0">Bạn có chắc chắn muốn xóa hình ảnh này không? Dữ liệu sau khi xóa sẽ <b>không thể khôi phục</b>.</p>
+                </div>
+
+                <div class="text-center mb-4 mt-3">
+                    <img src="~/images/products/@(string.IsNullOrEmpty(Model.Photo) ? "nophoto.png" : Model.Photo)"
+                         class="img-thumbnail shadow-sm"
+                         style="max-height: 250px; object-fit: cover;"
+                         alt="Hình ảnh mặt hàng" />
+                    <h5 class="mt-3 text-primary">Mô tả: @Model.Description</h5>
+                    <p class="text-muted">Thứ tự hiển thị: @Model.DisplayOrder | Trạng thái: @(Model.IsHidden ? "Đang ẩn" : "Đang hiển thị")</p>
+                </div>
+
+                <form action="~/Product/DeletePhoto/@Model.ProductID?photoId=@Model.PhotoID" method="post" class="text-center">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i> Xác nhận xóa
+                    </button>
+                    <a href="~/Product/Edit/@Model.ProductID" class="btn btn-secondary ms-2">
+                        <i class="bi bi-x-circle me-1"></i> Hủy bỏ
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

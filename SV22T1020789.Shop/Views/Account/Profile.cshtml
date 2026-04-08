@@ -1,0 +1,178 @@
+﻿@model SV22T1020789.Models.Partner.Customer
+@{
+    ViewBag.Title = "Hồ sơ cá nhân";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white border-bottom py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-1 fw-bold text-dark"><i class="fas fa-user-edit me-2 text-primary"></i>Thông tin cá nhân</h4>
+                            <p class="text-muted mb-0 small">Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
+                        </div>
+                        <a href="~/Account/ChangePassword" class="btn btn-outline-warning btn-sm rounded-pill px-3">
+                            <i class="fas fa-key me-1"></i> Đổi mật khẩu
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+                            <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i> @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form action="~/Account/UpdateProfile" method="post" class="needs-validation" novalidate>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary small uppercase">Địa chỉ Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="fas fa-envelope text-muted"></i></span>
+                                    <input type="email" class="form-control bg-light border-start-0" value="@Model.Email" readonly disabled />
+                                </div>
+                                <div class="form-text mt-1 text-info small"><i class="fas fa-info-circle"></i> Email dùng để đăng nhập, không thể thay đổi.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary small uppercase">Họ và Tên <span class="text-danger">*</span></label>
+                                <div class="input-group has-validation">
+                                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-user text-muted"></i></span>
+                                    <input type="text" class="form-control border-start-0" name="customerName" value="@Model.CustomerName" placeholder="Nhập họ tên..." required />
+                                    <div class="invalid-feedback">
+                                        Vui lòng nhập họ và tên của bạn!
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary small uppercase">Tên giao dịch / Liên hệ</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-id-card text-muted"></i></span>
+                                    <input type="text" class="form-control border-start-0" name="contactName" value="@Model.ContactName" placeholder="Tên thường dùng..." />
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary small uppercase">Số điện thoại</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-phone text-muted"></i></span>
+                                    <input type="tel" class="form-control border-start-0" name="phone" value="@Model.Phone" placeholder="Ví dụ: 0912xxxxxx" />
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary small uppercase">Tỉnh / Thành phố <span class="text-danger">*</span></label>
+                                <div class="input-group has-validation">
+                                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-map-marker-alt text-muted"></i></span>
+                                    <select class="form-select border-start-0" name="province" required>
+                                        <option value="">-- Chọn Tỉnh/Thành --</option>
+                                        @foreach (var p in ViewBag.Provinces)
+                                        {
+                                            <option value="@p.ProvinceName" selected="@(p.ProvinceName == Model.Province)">@p.ProvinceName</option>
+                                        }
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Bạn chưa chọn Tỉnh / Thành phố!
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold text-secondary small uppercase">Địa chỉ chi tiết</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-home text-muted"></i></span>
+                                    <input type="text" class="form-control border-start-0" name="address" value="@Model.Address" placeholder="Số nhà, đường, phường/xã..." />
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-5">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a href="~/Home" class="btn btn-light px-4 border">Quay lại</a>
+                                    <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                                        <i class="fas fa-save me-2"></i> Lưu thay đổi
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-light rounded-3 border">
+                <p class="mb-0 small text-muted">
+                    <strong>Lưu ý:</strong> Mọi thay đổi thông tin cá nhân sẽ được cập nhật ngay lập tức vào hệ thống. Trong trường hợp cần hỗ trợ thay đổi Email, vui lòng liên hệ bộ phận CSKH.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: none;
+    }
+
+    .input-group-text {
+        background-color: transparent;
+    }
+
+    .uppercase {
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.75rem;
+    }
+
+    .btn-primary {
+        background-color: #0d6efd;
+        border: none;
+    }
+
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+            transform: translateY(-1px);
+            transition: 0.2s;
+        }
+</style>
+
+<script>
+    (function () {
+        'use strict'
+
+        // Lấy tất cả các form có class needs-validation
+        var forms = document.querySelectorAll('.needs-validation')
+
+        // Lặp qua form và chặn submit nếu có lỗi
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>

@@ -1,0 +1,247 @@
+﻿@model ProductSearchInput
+@{
+    ViewBag.Title = "Lập đơn hàng";
+}
+
+<div class="row">
+    <div class="col-4">
+        <div class="card card-outline card-primary h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-search"></i>
+                    Lựa chọn hàng cần bán
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <form id="formSearch"
+                      method="get"
+                      action="~/Order/SearchProduct"
+                      data-target="searchResult"
+                      onsubmit="paginationSearch(event, this, 1)">
+
+                    <div class="input-group">
+                        <input type="hidden" asp-for="PageSize" />
+                        <input type="hidden" asp-for="CategoryID" />
+                        <input type="hidden" asp-for="SupplierID" />
+                        <input type="hidden" asp-for="MinPrice" />
+                        <input type="hidden" asp-for="MaxPrice" />
+
+                        <input class="form-control"
+                               asp-for="SearchValue"
+                               placeholder="Nhập tên mặt hàng cần tìm" autofocus />
+
+                        <button class="btn btn-primary">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <div id="searchResult" class="mt-3"></div>
+            </div>
+
+            <div class="card-footer">
+                <ul class="pagination justify-content-between mb-0">
+                    <li class="page-item">
+                        <a class="page-link" href="javascript:;" onclick="paginationSearch(null, document.getElementById('formSearch'), @Math.Max(1, Model.Page - 1))">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="javascript:;" onclick="paginationSearch(null, document.getElementById('formSearch'), @(Model.Page + 1))">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-8">
+        <div class="row">
+            <div class="col-12" id="cart">
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card card-outline card-info">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person"></i>
+                            Thông tin khách hàng & nơi giao hàng
+                        </h5>
+                    </div>
+
+                    <div class="card-body">
+                        <form method="post" onsubmit="createOrder(event,this)">
+                            <div class="row mb-3">
+                                <label class="col-md-2 col-form-label">Khách hàng</label>
+                                <div class="col-md-10">
+                                    <select class="form-select" name="customerID">
+                                        <option value="0">-- Chọn khách hàng --</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label class="col-md-2 col-form-label">Tỉnh/thành</label>
+                                <div class="col-md-10">
+                                    <select class="form-select" name="province" asp-items="await SelectListHelper.Provinces()">
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <label class="col-md-2 col-form-label">Địa chỉ</label>
+                                <div class="col-md-10">
+                                    <textarea class="form-control" name="address"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i>
+                                    Lập đơn hàng
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            paginationSearch(null, document.getElementById("formSearch"), 1);
+            showCart();
+        });
+
+        function showCart() {
+            fetch('/Order/ShowCart')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('cart').innerHTML = html;
+                })
+                .catch(error => console.error('Lỗi showCart:', error));
+        }
+
+        function paginationSearch(event, form, page) {
+            if (event) event.preventDefault();
+
+            const searchValue = form.querySelector('[name="SearchValue"]').value;
+            const pageSize = form.querySelector('[name="PageSize"]').value;
+
+            fetch(`${form.action}?SearchValue=${searchValue}&Page=${page}&PageSize=${pageSize}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('searchResult').innerHTML = html;
+                });
+        }
+
+        function UpdateCartItem(event, form) {
+            event.preventDefault();
+            const formData = new FormData(form);
+
+            fetch('/Order/UpdateCartItem', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi cập nhật',
+                        text: data.message,
+                        confirmButtonText: 'Đóng',
+                        confirmButtonColor: '#dc3545'
+                    });
+                } else {
+                    showCart();
+
+                    let modalElement = document.getElementById('modal-form');
+                    if (!modalElement) {
+                        modalElement = document.querySelector('.modal.show');
+                    }
+
+                    if (modalElement) {
+                        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        } else {
+                            new bootstrap.Modal(modalElement).hide();
+                        }
+                    }
+                }
+            })
+            .catch(error => console.error('Lỗi Update:', error));
+        }
+
+        function addCartItem(event, form) {
+            event.preventDefault();
+            fetch('/Order/AddCartItem', {
+                method: 'POST',
+                body: new FormData(form)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 1) {
+                    showCart();
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Chú ý',
+                        text: data.message,
+                        confirmButtonText: 'Đã hiểu',
+                        confirmButtonColor: '#ffc107'
+                    });
+                }
+            });
+        }
+
+        function deleteCartItem(productID) {
+            fetch(`/Order/DeleteCartItem?productID=${productID}`, { method: 'POST' })
+                .then(() => showCart());
+        }
+
+        function clearCart() {
+            fetch('/Order/ClearCart', { method: 'POST' })
+                .then(() => showCart());
+        }
+
+        function createOrder(event, form) {
+            event.preventDefault();
+            fetch('/Order/CreateOrder', {
+                method: 'POST',
+                body: new FormData(form)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code > 0) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Tuyệt vời!',
+                        text: 'Đặt hàng thành công!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        window.location.href = '/Order/Detail/' + data.code;
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                       
+                        text: data.message,
+                        confirmButtonText: 'Đóng',
+                        confirmButtonColor: '#0d6efd'
+                    });
+                }
+            });
+        }
+    </script>
+}

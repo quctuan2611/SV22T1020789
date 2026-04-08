@@ -1,0 +1,156 @@
+﻿@using SV22T1020789.Models.Sales
+@using SV22T1020789.BusinessLayers
+@model SV22T1020789.Models.Sales.Order
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+    var details = ViewBag.OrderDetails as IEnumerable<SV22T1020789.Models.Sales.OrderDetail> ?? new List<SV22T1020789.Models.Sales.OrderDetail>();
+
+    var productDict = ViewBag.ProductInfo as Dictionary<int, (string Name, string Photo)> ?? new Dictionary<int, (string Name, string Photo)>();
+
+    string adminImageBaseUrl = "http://localhost:5069/images/products/";
+
+    // Lấy thông tin khách hàng từ ViewBag mà mình đã truyền qua từ Controller
+    var customer = ViewBag.CustomerInfo as SV22T1020789.Models.Partner.Customer;
+}
+
+<div class="container mt-4 mb-5">
+    <a href="~/Order" class="btn btn-link text-decoration-none p-0 text-secondary mb-3">
+        <i class="bi bi-arrow-left"></i> Trở về lịch sử
+    </a>
+
+    <div class="row g-4">
+        @* CỘT TRÁI: Dòng thời gian (Timeline) & Danh sách hàng *@
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white fw-bold py-3 text-primary">
+                    <i class="bi bi-info-circle"></i> Trạng thái đơn hàng #@Model.OrderID
+                </div>
+                <div class="card-body">
+                    <h5 class="fw-bold text-center mb-4">@Model.Status.GetDescription()</h5>
+                    <ul class="list-unstyled mb-0 ms-3 border-start border-2 border-primary ps-4 position-relative">
+                        <li class="mb-3">
+                            <span class="position-absolute start-0 translate-middle p-2 bg-primary rounded-circle" style="margin-left: -1px;"></span>
+                            <strong>Đặt hàng:</strong> @Model.OrderTime.ToString("dd/MM/yyyy HH:mm")
+                        </li>
+                        @if (Model.AcceptTime.HasValue)
+                        {
+                            <li class="mb-3">
+                                <span class="position-absolute start-0 translate-middle p-2 bg-info rounded-circle" style="margin-left: -1px;"></span>
+                                <strong>Đã duyệt:</strong> @Model.AcceptTime.Value.ToString("dd/MM/yyyy HH:mm")
+                            </li>
+                        }
+                        @if (Model.ShippedTime.HasValue)
+                        {
+                            <li class="mb-3">
+                                <span class="position-absolute start-0 translate-middle p-2 bg-warning rounded-circle" style="margin-left: -1px;"></span>
+                                <strong>Đang giao:</strong> @Model.ShippedTime.Value.ToString("dd/MM/yyyy HH:mm")
+                            </li>
+                        }
+                        @if (Model.FinishedTime.HasValue)
+                        {
+                            // Đã fix lỗi ép kiểu: Thêm (int) trước Model.Status
+                            if ((int)Model.Status == 4)
+                            {
+                                <li>
+                                    <span class="position-absolute start-0 translate-middle p-2 bg-success rounded-circle" style="margin-left: -1px;"></span>
+                                    <strong class="text-success">Hoàn tất:</strong> @Model.FinishedTime.Value.ToString("dd/MM/yyyy HH:mm")
+                                </li>
+                            }
+                            else if ((int)Model.Status < 0)
+                            {
+                                <li>
+                                    <span class="position-absolute start-0 translate-middle p-2 bg-danger rounded-circle" style="margin-left: -1px;"></span>
+                                    <strong class="text-danger">@Model.Status.GetDescription():</strong> @Model.FinishedTime.Value.ToString("dd/MM/yyyy HH:mm")
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white fw-bold py-3">Danh sách sản phẩm</div>
+                <div class="card-body p-0">
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Sản phẩm</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end">Đơn giá</th>
+                                <th class="text-end pe-4">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in details)
+                            {
+                                // Lấy thông tin từ Dictionary
+                                productDict.TryGetValue(item.ProductID, out var p);
+                                string productName = p.Name ?? "Sản phẩm không tên";
+                                string photo = p.Photo ?? "nophoto.png";
+
+                                <tr>
+                                    <td class="ps-4 py-3">
+                                        <div class="d-flex align-items-center">
+                                            @* FIX ẢNH: Nối link Admin với tên file ảnh *@
+                                            <div style="width: 50px; height: 50px; flex-shrink: 0; background-color: #f8f9fa;">
+                                                <img src="@(adminImageBaseUrl + photo)"
+                                                     alt="@productName"
+                                                     class="rounded border w-100 h-100"
+                                                     style="object-fit: cover;"
+                                                     onerror="this.src='/images/nophoto.png';" />
+                                            </div>
+
+                                            <div class="ms-3 fw-medium text-dark">
+                                                @productName
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">@item.Quantity</td>
+                                    <td class="text-end">@item.SalePrice.ToString("N0") đ</td>
+                                    <td class="text-end fw-bold text-primary pe-4">@item.TotalPrice.ToString("N0") đ</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="bg-light">
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold py-3">TỔNG CỘNG:</td>
+                                <td class="text-end fw-bold text-danger pe-4 fs-5 py-3">
+                                    @details.Sum(x => x.TotalPrice).ToString("N0") đ
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @* CỘT PHẢI: Thông tin giao hàng *@
+        <div class="col-lg-4 mt-4 mt-lg-0">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white fw-bold py-3 text-primary">
+                    <i class="bi bi-person-lines-fill"></i> Thông tin giao hàng
+                </div>
+                <div class="card-body">
+                    @* 1. NGƯỜI NHẬN HÀNG: Ưu tiên hiển thị ContactName, nếu không có thì lấy CustomerName *@
+                    <p class="mb-1 text-muted small"><i class="bi bi-person-badge"></i> Người nhận hàng</p>
+                    <p class="fw-medium mb-3">
+                        @(string.IsNullOrWhiteSpace(customer?.ContactName) ? (customer?.CustomerName ?? "Khách hàng ẩn danh") : customer?.ContactName)
+                    </p>
+
+                    @* 2. SỐ ĐIỆN THOẠI: Lấy từ hồ sơ khách hàng *@
+                    <p class="mb-1 text-muted small"><i class="bi bi-telephone"></i> Số điện thoại</p>
+                    <p class="fw-medium mb-3">@(customer?.Phone ?? "Chưa cập nhật")</p>
+
+                    @* 3. KHU VỰC: Lấy từ Đơn hàng (vì lúc checkout khách có thể đổi) *@
+                    <p class="mb-1 text-muted small"><i class="bi bi-map"></i> Khu vực (Tỉnh/Thành)</p>
+                    <p class="fw-medium mb-3">@(string.IsNullOrWhiteSpace(Model.DeliveryProvince) ? "Chưa cập nhật" : Model.DeliveryProvince)</p>
+
+                    @* 4. ĐỊA CHỈ: Lấy từ Đơn hàng (vì lúc checkout khách có thể đổi) *@
+                    <p class="mb-1 text-muted small"><i class="bi bi-house-door"></i> Địa chỉ chi tiết</p>
+                    <p class="fw-medium mb-0">@(string.IsNullOrWhiteSpace(Model.DeliveryAddress) ? "Chưa cập nhật" : Model.DeliveryAddress)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

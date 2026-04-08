@@ -1,0 +1,92 @@
+﻿@model SV22T1020789.Models.HR.Employee
+@{
+    ViewBag.Title = "Phân quyền nhân viên";
+
+    
+    var currentRoles = ViewBag.CurrentRoles as string[] ?? new string[0];
+
+    var allRoles = new List<dynamic>
+    {
+        new { RoleValue = "customer", DisplayName = "Quản lý khách hàng", Description = "Thêm, sửa, xóa và xem danh sách khách hàng" },
+        new { RoleValue = "product", DisplayName = "Quản lý mặt hàng", Description = "Quản lý thông tin sản phẩm, giá bán, trạng thái" },
+        new { RoleValue = "sale", DisplayName = "Quản lý đơn hàng", Description = "Tạo, xử lý và theo dõi đơn hàng" },
+        new { RoleValue = "admin", DisplayName = "Quản trị hệ thống", Description = "Quản lý người dùng, phân quyền, cấu hình hệ thống" }
+    };
+}
+
+@section PageToolBar {
+    @* Quan trọng: Nút submit phải nằm trong ToolBar nhưng thuộc về Form *@
+    <button type="submit" form="formChangeRole" class="btn btn-primary">
+        <i class="bi bi-floppy-fill me-1"></i> Lưu dữ liệu
+    </button>
+    <a href="~/Employee" class="btn btn-secondary ms-1">
+        <i class="bi bi-arrow-left"></i> Quay lại
+    </a>
+}
+
+<div class="row justify-content-center">
+    <div class="col-12">
+        <div class="card card-primary card-outline shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-shield-lock-fill me-2 text-primary"></i>
+                    Thiết lập quyền: <span class="text-dark fw-bold">@Model.FullName</span>
+                </h5>
+            </div>
+
+            <div class="card-body">
+                
+                <form id="formChangeRole" action="/Employee/SaveRole" method="post">
+
+                   
+                    <input type="hidden" name="employeeID" value="@Model.EmployeeID" />
+
+                    <div class="bg-light p-3 rounded border mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Họ tên:</strong> @Model.FullName <br />
+                                <strong>Email:</strong> @Model.Email
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <strong>Trạng thái:</strong>
+                                @(Model.IsWorking ? "Đang làm việc" : "Đã nghỉ việc")
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width:80px">Chọn</th>
+                                    <th style="width:250px">Tên quyền</th>
+                                    <th>Mô tả chi tiết</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var role in allRoles)
+                                {
+                                   
+                                    bool isChecked = currentRoles.Contains((string)role.RoleValue);
+
+                                    <tr>
+                                        <td class="text-center">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   name="selectedRoles"
+                                                   value="@role.RoleValue"
+                                                   @(isChecked ? "checked" : "")
+                                                   style="transform: scale(1.2); cursor:pointer" />
+                                        </td>
+                                        <td><span class="fw-bold">@role.DisplayName</span></td>
+                                        <td class="text-muted"><small>@role.Description</small></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

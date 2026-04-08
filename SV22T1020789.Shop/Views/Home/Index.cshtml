@@ -1,0 +1,357 @@
+﻿@model PagedResult<Product>
+@{
+    ViewBag.Title = "Trang chủ";
+    string adminImageBaseUrl = "http://localhost:5069/images/products/";
+
+    // Lấy trước các tham số Query để dùng cho Form và Phân trang (tránh lỗi null)
+    string? catIdStr = Context.Request.Query["categoryId"].ToString();
+    string? searchValue = Context.Request.Query["searchValue"].ToString();
+    string? minPriceStr = Context.Request.Query["minPrice"].ToString();
+    string? maxPriceStr = Context.Request.Query["maxPrice"].ToString();
+}
+
+<style>
+    .btn-action-sm {
+        font-size: 0.85rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .page-link-custom {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .page-item:not(.active):not(.disabled) .page-link-custom:hover {
+        background-color: #0d6efd;
+        color: white !important;
+        transform: translateY(-3px);
+    }
+
+    .product-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+
+    .success-icon {
+        width: 80px;
+        height: 80px;
+        background-color: #28a745;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        margin: 0 auto 20px auto;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+</style>
+
+@* --- BANNER SIÊU SALE --- *@
+<div class="mb-4 rounded-4 overflow-hidden position-relative shadow-sm">
+    <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070&auto=format&fit=crop"
+         class="w-100 object-fit-cover" style="height: 300px;" alt="Khuyến mãi">
+    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(0,0,0,0.4);">
+        <div class="container text-white px-md-5">
+            <h1 class="fw-bold display-6 mb-2">QTuan-Shop</h1>
+            <p class="lead mb-4">Săn Deal công nghệ - Giá rẻ bất ngờ!</p>
+        </div>
+    </div>
+</div>
+
+@{
+    string currentCategoryName = "Sản phẩm nổi bật";
+    if (!string.IsNullOrEmpty(catIdStr) && ViewBag.Categories != null)
+    {
+        if (int.TryParse(catIdStr, out int currentCatId))
+        {
+            foreach (var cat in ViewBag.Categories)
+            {
+                if (cat.CategoryID == currentCatId) { currentCategoryName = cat.CategoryName; break; }
+            }
+        }
+    }
+
+    if (!string.IsNullOrEmpty(searchValue))
+    {
+        currentCategoryName = $"Kết quả cho: \"{searchValue}\"";
+    }
+}
+
+@* --- TIÊU ĐỀ DANH MỤC & BỘ LỌC GIÁ MINI --- *@
+<div id="product-list" class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end mb-4 border-bottom pb-3 gap-3 mt-5">
+
+    <div class="d-flex align-items-center gap-3">
+        <h4 class="fw-bold m-0 text-dark text-uppercase">
+            <i class="bi bi-tags-fill text-primary me-2"></i>@currentCategoryName
+        </h4>
+        <span class="text-muted small bg-light px-3 py-1 rounded-pill border d-none d-sm-inline-block">
+            <strong class="text-danger">@Model.RowCount</strong> sản phẩm
+        </span>
+    </div>
+
+    <form action="~/Home/Index" method="get" class="m-0 bg-light p-1 rounded-pill border d-inline-flex align-items-center ps-3 pe-1 shadow-sm">
+        @* Các giá trị ẩn mang theo *@
+        <input type="hidden" name="categoryId" value="@catIdStr" />
+        <input type="hidden" name="searchValue" value="@searchValue" />
+
+        @* --- 2 Ô ẨN NÀY LÀ ĐỂ GỬI GIÁ TRỊ THẬT VỀ SERVER (KHÔNG CÓ DẤU PHẨY) --- *@
+        <input type="hidden" name="minPrice" id="realMinPrice" value="@minPriceStr" />
+        <input type="hidden" name="maxPrice" id="realMaxPrice" value="@maxPriceStr" />
+
+        <span class="text-muted small fw-bold text-nowrap me-2 d-none d-sm-block">
+            <i class="bi bi-funnel-fill text-primary"></i> Giá:
+        </span>
+
+        @* Ô hiển thị: Dùng type="text" để cho phép hiện dấu phẩy. Gọi JS oninput để tự động format *@
+        <input type="text" id="displayMinPrice" class="form-control form-control-sm border-0 bg-transparent shadow-none text-end px-1"
+               style="width: 95px;" placeholder="Từ..." value="@minPriceStr" oninput="formatPrice(this, 'realMinPrice')">
+
+        <span class="text-muted small mx-1">-</span>
+
+        <input type="text" id="displayMaxPrice" class="form-control form-control-sm border-0 bg-transparent shadow-none px-1"
+               style="width: 95px;" placeholder="Đến..." value="@maxPriceStr" oninput="formatPrice(this, 'realMaxPrice')">
+
+        <button class="btn btn-sm btn-primary rounded-pill px-3 fw-medium ms-1" type="submit">Lọc</button>
+
+        @if (!string.IsNullOrEmpty(minPriceStr) || !string.IsNullOrEmpty(maxPriceStr))
+        {
+            <a href="~/Home/Index?categoryId=@catIdStr&searchValue=@searchValue" class="text-danger ms-2 me-1" title="Xóa lọc">
+                <i class="bi bi-x-circle-fill fs-5"></i>
+            </a>
+        }
+    </form>
+</div>
+
+@* --- DANH SÁCH SẢN PHẨM --- *@
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 mb-5">
+    @foreach (var item in Model.DataItems)
+    {
+        <div class="col">
+            <div class="card h-100 product-card shadow-sm border-0">
+                <div class="position-relative text-center p-3 bg-white" style="height: 200px;">
+                    <img src="@adminImageBaseUrl@(string.IsNullOrEmpty(item.Photo) ? "no-image.png" : item.Photo)"
+                         class="img-fluid h-100 object-fit-contain" alt="@item.ProductName"
+                         onerror="this.src='https://placehold.co/400x400?text=No+Image'">
+                </div>
+
+                <div class="card-body d-flex flex-column border-top bg-light pt-3">
+                    <p class="text-muted small mb-1">@item.Unit</p>
+                    <h6 class="card-title fw-bold text-dark text-truncate mb-2">@item.ProductName</h6>
+                    <h5 class="text-danger fw-bold mb-3">@item.Price.ToString("N0") đ</h5>
+
+                    <div class="d-flex gap-2 mt-auto">
+                        <a href="~/Home/Details?id=@item.ProductID" class="btn btn-outline-primary rounded-pill flex-fill btn-action-sm py-2">
+                            <i class="bi bi-eye"></i> Chi tiết
+                        </a>
+                        @if (item.IsSelling)
+                        {
+                            <form action="~/Cart/Add" method="post" class="flex-fill d-flex ajax-add-cart" data-product-name="@item.ProductName">
+                                <input type="hidden" name="id" value="@item.ProductID" />
+                                <input type="hidden" name="quantity" value="1" />
+                                <button type="submit" class="btn btn-primary rounded-pill flex-fill btn-action-sm py-2">
+                                    <i class="bi bi-cart-plus"></i> Mua
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (Model.RowCount == 0)
+    {
+        <div class="col-12 text-center py-5">
+            <h5 class="text-muted">Không có sản phẩm nào phù hợp!</h5>
+            <a href="~/Home/Index" class="btn btn-outline-primary mt-3"><i class="bi bi-arrow-left"></i> Xem tất cả sản phẩm</a>
+        </div>
+    }
+</div>
+
+@* --- PHÂN TRANG  --- *@
+@if (Model.PageCount > 1)
+{
+    // Tạo sẵn một chuỗi chứa các tham số (nếu có) để nối vào Link trang
+    var qsParams = new List<string>();
+    if (!string.IsNullOrEmpty(catIdStr)) qsParams.Add($"categoryId={catIdStr}");
+    if (!string.IsNullOrEmpty(searchValue)) qsParams.Add($"searchValue={searchValue}");
+    if (!string.IsNullOrEmpty(minPriceStr)) qsParams.Add($"minPrice={minPriceStr}");
+    if (!string.IsNullOrEmpty(maxPriceStr)) qsParams.Add($"maxPrice={maxPriceStr}");
+
+    // Nối các tham số lại bằng dấu &, nếu có tham số thì thêm & ở đầu
+    string queryUrl = qsParams.Count > 0 ? "&" + string.Join("&", qsParams) : "";
+
+    // Lô-gic phân trang thông minh: Chỉ hiện tối đa 5 trang ở giữa
+    int currentPage = Model.Page;
+    int totalPages = Model.PageCount;
+    int startPage = Math.Max(1, currentPage - 2);
+    int endPage = Math.Min(totalPages, currentPage + 2);
+
+    <nav class="mt-5 mb-5">
+        @* Thêm flex-wrap để nếu màn hình quá nhỏ nó rớt dòng mượt mà không bị tràn *@
+        <ul class="pagination justify-content-center gap-2 flex-wrap">
+
+            @* Nút Trang Trước *@
+            @if (currentPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link page-link-custom rounded-circle border-0 shadow-sm"
+                       href="~/Home/Index?page=@(currentPage - 1)@queryUrl" title="Trang trước">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+            }
+
+            @* Luôn hiện trang 1 và dấu ... ở đầu nếu đang ở trang xa *@
+            @if (startPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link page-link-custom rounded-circle border-0 shadow-sm" href="~/Home/Index?page=1@queryUrl">1</a>
+                </li>
+                if (startPage > 2)
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link page-link-custom rounded-circle border-0 bg-transparent text-muted">...</span>
+                    </li>
+                }
+            }
+
+            @* In các trang ở giữa (ví dụ: đang ở trang 5 thì in 3, 4, [5], 6, 7) *@
+            @for (int p = startPage; p <= endPage; p++)
+            {
+                <li class="page-item @(p == currentPage ? "active" : "")">
+                    <a class="page-link page-link-custom rounded-circle border-0 shadow-sm"
+                       href="~/Home/Index?page=@p@queryUrl">@p</a>
+                </li>
+            }
+
+            @* Luôn hiện trang cuối và dấu ... ở cuối nếu chưa tới trang cuối *@
+            @if (endPage < totalPages)
+            {
+                if (endPage < totalPages - 1)
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link page-link-custom rounded-circle border-0 bg-transparent text-muted">...</span>
+                    </li>
+                }
+                <li class="page-item">
+                    <a class="page-link page-link-custom rounded-circle border-0 shadow-sm" href="~/Home/Index?page=@totalPages@queryUrl">@totalPages</a>
+                </li>
+            }
+
+            @* Nút Trang Sau *@
+            @if (currentPage < totalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link page-link-custom rounded-circle border-0 shadow-sm"
+                       href="~/Home/Index?page=@(currentPage + 1)@queryUrl" title="Trang sau">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+
+@* --- MODAL THÔNG BÁO --- *@
+<div class="modal fade" id="successCartModal" tabindex="-1" aria-labelledby="successCartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 p-3">
+            <div class="modal-body text-center">
+                <div class="success-icon">
+                    <i class="bi bi-check-lg"></i>
+                </div>
+                <h4 class="fw-bold mb-2">Thêm vào giỏ hàng thành công!</h4>
+                <p class="text-muted mb-4">Đã thêm: <strong id="modal-product-name" class="text-dark"></strong></p>
+
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-medium rounded-3" data-bs-dismiss="modal">
+                        Tiếp tục mua sắm
+                    </button>
+                    <a href="~/Cart" class="btn btn-danger px-4 py-2 fw-medium rounded-3" style="background-color: #ff5722; border-color: #ff5722;">
+                        Xem giỏ hàng
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // HÀM FORMAT TIỀN TỆ CÓ DẤU PHẨY
+        function formatPrice(inputEle, hiddenId) {
+            // Lấy giá trị hiện tại, xóa hết các ký tự không phải là số (như dấu phẩy)
+            let rawValue = inputEle.value.replace(/\D/g, '');
+
+            // Cập nhật con số nguyên gốc vào ô hidden để tí nữa Submit Form
+            document.getElementById(hiddenId).value = rawValue;
+
+            // Nếu người dùng có nhập số thì format thêm dấu phẩy
+            if (rawValue !== '') {
+                inputEle.value = parseInt(rawValue, 10).toLocaleString('en-US');
+            } else {
+                inputEle.value = '';
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            
+            const displayMin = document.getElementById('displayMinPrice');
+            if(displayMin.value) formatPrice(displayMin, 'realMinPrice');
+
+            const displayMax = document.getElementById('displayMaxPrice');
+            if(displayMax.value) formatPrice(displayMax, 'realMaxPrice');
+
+            // Logic thêm giỏ hàng cũ 
+            const addCartForms = document.querySelectorAll(".ajax-add-cart");
+            const successModal = new bootstrap.Modal(document.getElementById('successCartModal'));
+            const modalProductName = document.getElementById('modal-product-name');
+
+            addCartForms.forEach(form => {
+                form.addEventListener("submit", function (e) {
+                    e.preventDefault();
+
+                    const url = this.action;
+                    const formData = new FormData(this);
+                    const productName = this.getAttribute('data-product-name');
+
+                    fetch(url, {
+                        method: "POST",
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.totalCount !== undefined) {
+                            const cartBadge = document.getElementById("cart-count");
+                            if (cartBadge) {
+                                cartBadge.innerText = data.totalCount;
+                            }
+
+                            modalProductName.innerText = `"${productName}"`;
+                            successModal.show();
+                        }
+                    })
+                    .catch(error => console.error('Lỗi:', error));
+                });
+            });
+        });
+    </script>
+}

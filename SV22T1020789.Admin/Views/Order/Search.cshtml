@@ -1,0 +1,119 @@
+﻿@model SV22T1020789.Models.Common.PagedResult<SV22T1020789.Models.Sales.OrderViewInfo>
+@{
+    Layout = null; // Đây là PartialView nên không dùng Layout
+}
+
+<div class="mb-2 text-muted">
+    Danh sách này có <strong>@Model.RowCount</strong> đơn hàng
+</div>
+
+<div class="card">
+    <div class="card-body p-1">
+        <table class="table table-bordered table-hover mb-0 align-middle">
+            <thead class="table-secondary">
+                <tr>
+                    <th class="text-center">Ngày đặt hàng</th>
+                    <th>Tên khách hàng</th>
+                    <th class="text-center">Điện thoại</th>
+                    <th class="text-center">Ngày duyệt</th>
+                    <th>Nhân viên xử lý</th>
+                    <th class="text-end">Tổng tiền</th>
+                    <th class="text-center" style="width:140px;">Trạng thái</th>
+                    <th class="text-center" style="width:80px;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.DataItems != null && Model.DataItems.Any())
+                {
+                    foreach (var item in Model.DataItems)
+                    {
+                        <tr>
+                            <td class="text-center">@item.OrderTime.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <strong>@(string.IsNullOrEmpty(item.CustomerName) ? "Khách lẻ" : item.CustomerName)</strong>
+                            </td>
+                            <td class="text-center">@item.CustomerPhone</td>
+                            <td class="text-center">
+                                @(item.AcceptTime.HasValue? item.AcceptTime.Value.ToString("dd/MM/yyyy") : "")
+                            </td>
+                            <td>@item.EmployeeName</td>
+
+                            <td class="text-end text-danger fw-bold">@item.TotalMoney.ToString("N0")</td>
+
+                            <td class="text-center">
+                                @if ((int)item.Status == 1)
+                                {
+                                    <span class="badge bg-warning text-dark">Đơn hàng mới</span>
+                                }
+                                else if ((int)item.Status == 2)
+                                {
+                                    <span class="badge bg-primary">Đã duyệt</span>
+                                }
+                                else if ((int)item.Status == 3)
+                                {
+                                    <span class="badge bg-info">Đang giao hàng</span>
+                                }
+                                else if ((int)item.Status == 4)
+                                {
+                                    <span class="badge bg-success">Hoàn tất</span>
+                                }
+                                else if ((int)item.Status == -1)
+                                {
+                                    <span class="badge bg-danger">Bị hủy</span>
+                                }
+                                else if ((int)item.Status == -2)
+                                {
+                                    <span class="badge bg-secondary">Bị từ chối</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-dark">Không xác định</span>
+                                }
+                            </td>
+                            <td class="text-center text-nowrap">
+                                <a href="~/Order/Detail/@item.OrderID" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-receipt"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">Không tìm thấy đơn hàng nào.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card-footer">
+        <ul class="pagination justify-content-center mb-0">
+            @foreach (var p in Model.GetDisplayPages())
+            {
+                if (p.IsCurrent)
+                {
+                    <li class="page-item active">
+                        <a class="page-link">@p.Page</a>
+                    </li>
+                }
+                else if (p.IsEllipsis)
+                {
+                    <li class="page-item disabled">
+                        <a class="page-link">...</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="javascript:;"
+                           onclick="paginationSearch(event, document.getElementById('formSearch'), @p.Page)">
+                            @p.Page
+                        </a>
+                    </li>
+                }
+            }
+        </ul>
+    </div>
+</div>

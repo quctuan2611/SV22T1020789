@@ -1,0 +1,180 @@
+﻿@model SV22T1020789.Models.Partner.Customer
+@{
+    ViewData["Title"] = "Thanh toán đơn hàng";
+    string adminImageBaseUrl = "http://localhost:5069/images/products/";
+    var cart = ViewBag.Cart as List<SV22T1020789.Shop.Models.CartItem> ?? new List<SV22T1020789.Shop.Models.CartItem>();
+}
+
+<div class="container mt-4 mb-5">
+    <h2 class="mb-4 text-primary"><i class="fa fa-shopping-cart"></i> Xác nhận đặt hàng</h2>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fa fa-exclamation-triangle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!cart.Any())
+    {
+        <div class="alert alert-warning text-center p-5 shadow-sm border-0 rounded">
+            <h4 class="alert-heading mb-3"><i class="fa fa-box-open fa-2x text-secondary"></i></h4>
+            <p class="fs-5">Giỏ hàng của bạn đang trống.</p>
+            <hr>
+            <a href="~/" class="btn btn-primary mt-2">
+                <i class="fa fa-arrow-left"></i> Tiếp tục mua sắm
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @* --- CỘT 1: THÔNG TIN GIAO HÀNG --- *@
+            <div class="col-md-7">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h5 class="card-title mb-0"><i class="fa fa-map-marker-alt"></i> 1. Thông tin giao nhận</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        @* Thêm class 'needs-validation' và 'novalidate' để dùng Bootstrap Validation *@
+                        <form action="~/Cart/InitOrder" method="post" class="needs-validation" novalidate>
+                            @Html.AntiForgeryToken()
+
+                            @* 1. NGƯỜI ĐẶT HÀNG *@
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Người đặt hàng</label>
+                                <input type="text" class="form-control bg-light" value="@Model?.CustomerName" readonly />
+                            </div>
+
+                            @* 2. TÊN NGƯỜI NHẬN *@
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Tên người nhận / Tên giao dịch</label>
+                                <input type="text" class="form-control bg-light" name="deliveryName"
+                                       value="@(string.IsNullOrWhiteSpace(Model?.ContactName) ? Model?.CustomerName : Model?.ContactName)"
+                                       readonly />
+                                <div class="invalid-feedback">Vui lòng không để trống tên người nhận.</div>
+                            </div>
+
+                            @* 3. SỐ ĐIỆN THOẠI *@
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Số điện thoại liên hệ <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" name="deliveryPhone" value="@Model?.Phone" required
+                                       placeholder="Số điện thoại nhận hàng..." pattern="[0-9]{9,11}" />
+                                @* THÔNG BÁO LỖI DƯỚI ĐÂY *@
+                                <div class="invalid-feedback">
+                                    Vui lòng nhập số điện thoại hợp lệ (9 - 11 chữ số).
+                                </div>
+                            </div>
+
+                            @* 4. TỈNH/THÀNH PHỐ *@
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Tỉnh/Thành phố <span class="text-danger">*</span></label>
+                                <select class="form-select" name="deliveryProvince" required>
+                                    <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                                    @if (ViewBag.Provinces != null)
+                                    {
+                                        foreach (var p in ViewBag.Provinces)
+                                        {
+                                            <option value="@p.ProvinceName" selected="@(p.ProvinceName == Model?.Province)">@p.ProvinceName</option>
+                                        }
+                                    }
+                                </select>
+                                @* THÔNG BÁO LỖI DƯỚI ĐÂY *@
+                                <div class="invalid-feedback">
+                                    Vui lòng chọn Tỉnh/Thành phố giao hàng.
+                                </div>
+                            </div>
+
+                            @* 5. ĐỊA CHỈ CHI TIẾT *@
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Địa chỉ chi tiết <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="deliveryAddress" value="@Model?.Address" required placeholder="Số nhà, tên đường..." />
+                                @* THÔNG BÁO LỖI DƯỚI ĐÂY *@
+                                <div class="invalid-feedback">
+                                    Vui lòng nhập địa chỉ giao hàng chi tiết.
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-success btn-lg w-100 mt-2 shadow-sm">
+                                <i class="fa fa-check-circle"></i> XÁC NHẬN ĐẶT HÀNG
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            @* CỘT 2: TÓM TẮT ĐƠN HÀNG *@
+            <div class="col-md-5">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-dark text-white py-3">
+                        <h5 class="card-title mb-0"><i class="fa fa-list-alt"></i> 2. Đơn hàng của bạn</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>Số lượng:</span>
+                            <span class="fw-bold text-primary">@cart.Sum(x => x.Quantity) sản phẩm</span>
+                        </div>
+                        <hr />
+
+                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-borderless align-middle">
+                                <tbody>
+                                    @foreach (var item in cart)
+                                    {
+                                        <tr class="border-bottom">
+                                            <td class="py-2">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="@(adminImageBaseUrl + (string.IsNullOrEmpty(item.Photo) ? "nophoto.png" : item.Photo))"
+                                                         alt="@item.ProductName"
+                                                         style="width: 50px; height: 50px; object-fit: cover;"
+                                                         class="me-2 border rounded shadow-sm"
+                                                         onerror="this.src='/images/no-image.png'" />
+                                                    <div style="flex: 1;">
+                                                        <h6 class="mb-0 text-truncate" style="max-width: 150px;">@item.ProductName</h6>
+                                                        <small class="text-muted">@item.Quantity x @item.Price.ToString("N0")</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-end fw-bold">@item.TotalPrice.ToString("N0") đ</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="mt-4 p-3 rounded" style="background-color: #f8f9fa; border: 1px dashed #dee2e6;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="h5 mb-0">Thành tiền:</span>
+                                <span class="h4 text-danger mb-0 fw-bold">@cart.Sum(x => x.TotalPrice).ToString("N0") đ</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@* SCRIPT ĐỂ KÍCH HOẠT HIỆN LỖI *@
+@section Scripts {
+    <script>
+        (function () {
+            'use strict'
+            // Lấy tất cả các form cần validate
+            var forms = document.querySelectorAll('.needs-validation')
+
+            // Lặp qua và ngăn chặn việc submit nếu có lỗi
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+    </script>
+}

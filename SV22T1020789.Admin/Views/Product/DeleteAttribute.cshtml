@@ -1,0 +1,48 @@
+﻿@model SV22T1020789.Models.Catalog.ProductAttribute
+@{
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-12">
+        <div class="card card-danger card-outline mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Xác nhận xóa thuộc tính mặt hàng</h5>
+            </div>
+
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <h5><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i> Cảnh báo!</h5>
+                    <p class="mb-0">Bạn có chắc chắn muốn xóa thuộc tính này không? Dữ liệu sau khi xóa sẽ <b>không thể khôi phục</b>.</p>
+                </div>
+
+                <div class="table-responsive mt-4 mb-4">
+                    <table class="table table-bordered table-striped">
+                        <tbody>
+                            <tr>
+                                <th class="bg-light" style="width: 30%;">Tên thuộc tính:</th>
+                                <td><strong class="text-primary">@Model.AttributeName</strong></td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">Giá trị:</th>
+                                <td>@Model.AttributeValue</td>
+                            </tr>
+                            <tr>
+                                <th class="bg-light">Thứ tự hiển thị:</th>
+                                <td>@Model.DisplayOrder</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <form action="~/Product/DeleteAttribute/@Model.ProductID?attributeId=@Model.AttributeID" method="post" class="text-center">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i> Xác nhận xóa
+                    </button>
+                    <a href="~/Product/Edit/@Model.ProductID" class="btn btn-secondary ms-2">
+                        <i class="bi bi-x-circle me-1"></i> Hủy bỏ
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

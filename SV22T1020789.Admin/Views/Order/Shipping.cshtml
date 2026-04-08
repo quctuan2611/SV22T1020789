@@ -1,0 +1,38 @@
+﻿@model int
+@{
+    Layout = null;
+}
+
+<form action="~/Order/Shipping/@Model" method="post">
+    <div class="modal-header text-bg-info">
+        <strong class="modal-title">Chọn người giao hàng</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+
+    <div class="modal-body">
+        <div class="row">
+            <div class="col-12">
+                <label class="form-label">Người giao hàng</label>
+                <select class="form-select" name="shipperID" required>
+                    <option value="">-- Chọn người giao hàng ---</option>
+
+                    @if (ViewBag.Shippers != null)
+                    {
+                        foreach (var item in ViewBag.Shippers)
+                        {
+                            <option value="@item.ShipperID">@item.ShipperName</option>
+                        }
+                    }
+
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-bicycle"></i> Giao hàng
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+    </div>
+</form>

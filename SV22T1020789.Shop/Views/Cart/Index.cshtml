@@ -1,0 +1,265 @@
+﻿@model IEnumerable<SV22T1020789.Shop.Models.CartItem>
+@{
+    ViewBag.Title = "Giỏ hàng của bạn";
+    string adminImageBaseUrl = "http://localhost:5069/images/products/";
+}
+
+<style>
+    /* Ẩn nút tăng giảm mặc định của input number */
+    input[type="number"].item-quantity::-webkit-inner-spin-button,
+    input[type="number"].item-quantity::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type="number"].item-quantity {
+        -moz-appearance: textfield;
+    }
+</style>
+
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0"><i class="bi bi-cart3 text-primary me-2"></i>Giỏ hàng của bạn</h2>
+        @if (Model != null && Model.Any())
+        {
+            <a href="~/Cart/ClearAll" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm" id="btn-clear-all">
+                <i class="bi bi-trash3 me-1"></i> Xóa tất cả giỏ hàng
+            </a>
+        }
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="text-center py-5 bg-white rounded-4 shadow-sm border-0">
+            <i class="bi bi-cart-x display-1 text-muted mb-3 d-block"></i>
+            <h4 class="fw-bold text-dark">Giỏ hàng đang trống</h4>
+            <p class="text-muted mb-4">Có vẻ như bạn chưa chọn mua sản phẩm nào.</p>
+            <a href="~/Home/Index" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm">
+                <i class="bi bi-shop me-2"></i>Tiếp tục mua sắm
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" class="ps-4">Sản phẩm</th>
+                                    <th scope="col" class="text-center">Đơn giá</th>
+                                    <th scope="col" class="text-center" style="width: 150px;">Số lượng</th>
+                                    <th scope="col" class="text-end">Thành tiền</th>
+                                    <th scope="col" class="text-center pe-4">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td class="ps-4 py-3">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <a href="~/Home/Details?id=@item.ProductID">
+                                                    <img src="@adminImageBaseUrl@(string.IsNullOrEmpty(item.Photo) ? "no-image.png" : item.Photo)"
+                                                         alt="@item.ProductName" class="rounded-3 border bg-white"
+                                                         style="width: 60px; height: 60px; object-fit: contain;"
+                                                         onerror="this.src='https://placehold.co/100x100?text=No+Image'">
+                                                </a>
+                                                <div>
+                                                    <a href="~/Home/Details?id=@item.ProductID" class="text-decoration-none">
+                                                        <h6 class="fw-bold mb-1 text-dark">@item.ProductName</h6>
+                                                    </a>
+                                                    <a href="~/Home/Details?id=@item.ProductID" class="text-decoration-none text-primary" style="font-size: 0.85rem;">
+                                                        <i class="bi bi-info-circle"></i> Xem chi tiết
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center fw-medium text-danger">@item.Price.ToString("N0") đ</td>
+
+                                        <td class="text-center align-middle">
+                                            <div class="input-group input-group-sm mx-auto" style="width: 120px;">
+                                                <button type="button" class="btn btn-outline-secondary btn-minus" data-id="@item.ProductID">-</button>
+
+                                                <input type="number" class="form-control text-center fw-bold item-quantity"
+                                                       data-id="@item.ProductID" data-price="@item.Price"
+                                                       value="@item.Quantity" min="1" max="99">
+
+                                                <button type="button" class="btn btn-outline-secondary btn-plus" data-id="@item.ProductID">+</button>
+                                            </div>
+                                        </td>
+
+                                        <td class="text-end fw-bold text-danger item-total" id="item-total-@item.ProductID">
+                                            @item.TotalPrice.ToString("N0") đ
+                                        </td>
+
+                                        <td class="text-center pe-4">
+                                            <a href="~/Cart/Remove?id=@item.ProductID" class="btn btn-outline-danger btn-sm rounded-circle btn-delete">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div style="position: sticky; top: 1.5rem; z-index: 10;">
+                    <div class="card border-0 shadow-sm rounded-4 p-4">
+                        <h5 class="fw-bold mb-4">Tóm tắt đơn hàng</h5>
+
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Tổng số lượng:</span>
+                            <span class="fw-bold" id="cart-total-qty">@Model.Sum(x => x.Quantity) sản phẩm</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Tạm tính:</span>
+                            <span class="fw-bold" id="cart-subtotal">@Model.Sum(x => x.TotalPrice).ToString("N0") đ</span>
+                        </div>
+
+                        <hr class="text-muted opacity-25 mb-4">
+
+                        <div class="d-flex justify-content-between mb-4 align-items-center">
+                            <span class="fw-bold text-dark fs-5">Tổng cộng:</span>
+                            <span class="fw-bold text-danger fs-5" id="cart-grandtotal">@Model.Sum(x => x.TotalPrice).ToString("N0") đ</span>
+                        </div>
+
+                        <a href="~/Cart/Checkout" class="btn btn-primary btn-lg rounded-pill w-100 fw-bold shadow-sm mb-3">
+                            Tiến hành thanh toán <i class="bi bi-arrow-right-short fs-4 align-middle"></i>
+                        </a>
+                        <a href="~/Home/Index" class="btn btn-outline-secondary rounded-pill w-100 fw-medium">
+                            <i class="bi bi-arrow-left-short align-middle"></i> Mua thêm
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Cập nhật giỏ hàng qua Ajax
+            function updateCart(id, quantity, inputElem) {
+                $.post('/Cart/Update', { id: id, quantity: quantity }, function () {
+                    let price = parseFloat(inputElem.data('price'));
+                    let newTotal = price * quantity;
+
+                    $('#item-total-' + id).text(newTotal.toLocaleString('vi-VN') + ' đ');
+                    updateGrandTotals();
+                });
+            }
+
+            // Tính toán lại tổng tiền trên giao diện
+            function updateGrandTotals() {
+                let totalQty = 0;
+                let grandTotal = 0;
+
+                $('.item-quantity').each(function () {
+                    let qty = parseInt($(this).val());
+                    let price = parseFloat($(this).data('price'));
+
+                    totalQty += qty;
+                    grandTotal += (qty * price);
+                });
+
+                $('#cart-total-qty').text(totalQty + ' sản phẩm');
+                $('#cart-subtotal').text(grandTotal.toLocaleString('vi-VN') + ' đ');
+                $('#cart-grandtotal').text(grandTotal.toLocaleString('vi-VN') + ' đ');
+            }
+
+            // Nút Cộng (+)
+            $('.btn-plus').click(function () {
+                let id = $(this).data('id');
+                let input = $('.item-quantity[data-id="' + id + '"]');
+                let currentVal = parseInt(input.val());
+
+                if (currentVal < 99) {
+                    input.val(currentVal + 1);
+                    updateCart(id, currentVal + 1, input);
+                }
+            });
+
+            // Nút Trừ (-)
+            $('.btn-minus').click(function () {
+                let id = $(this).data('id');
+                let input = $('.item-quantity[data-id="' + id + '"]');
+                let currentVal = parseInt(input.val());
+
+                if (currentVal > 1) {
+                    input.val(currentVal - 1);
+                    updateCart(id, currentVal - 1, input);
+                }
+            });
+
+            // Gõ số trực tiếp
+            $('.item-quantity').change(function () {
+                let id = $(this).data('id');
+                let currentVal = parseInt($(this).val());
+
+                if (isNaN(currentVal) || currentVal < 1) {
+                    $(this).val(1);
+                    currentVal = 1;
+                }
+                if (currentVal > 99) {
+                    $(this).val(99);
+                    currentVal = 99;
+                }
+                updateCart(id, currentVal, $(this));
+            });
+
+            // Xóa từng sản phẩm (SweetAlert2)
+            $('.btn-delete').click(function (e) {
+                e.preventDefault();
+                let deleteUrl = $(this).attr('href');
+
+                Swal.fire({
+                    title: 'Xóa sản phẩm này?',
+                    text: "Bạn có chắc muốn bỏ sản phẩm này khỏi giỏ hàng?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Đồng ý xóa',
+                    cancelButtonText: 'Hủy bỏ',
+                    width: '400px'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = deleteUrl;
+                    }
+                });
+            });
+
+            // XÓA TẤT CẢ GIỎ HÀNG (SweetAlert2)
+            $('#btn-clear-all').click(function (e) {
+                e.preventDefault();
+                let clearUrl = $(this).attr('href');
+
+                Swal.fire({
+                    title: 'Dọn sạch giỏ hàng?',
+                    text: "Tất cả sản phẩm sẽ bị xóa sạch . bạn có chắc không?",
+                    icon: 'error', // Hiện icon lỗi cho nó rực rỡ
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Chấp nhận',
+                    cancelButtonText: 'Không',
+                    width: '400px'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = clearUrl;
+                    }
+                });
+            });
+        });
+    </script>
+}
